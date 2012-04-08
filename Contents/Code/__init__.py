@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-# Плагин для бесплатного просмотра российского телевизионного канала Первый Канал - http://www.1tv.ru/
+#
+# Plex plugin for viewing internet archives of the Russian
+# TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/
+#
+# Плагин для бесплатного просмотра интернет архива российского
+# телевизионного канала Первый Канал - http://www.1tv.ru/
 #
 # @author Alex Titoff <rozdol@gmail.com> - http://rozdol.com/
 # @author Zhenya Nyden <yev@curre.net>
@@ -7,6 +12,7 @@
 ####################################################################################################
 # v0.3 - March 31, 2012
 # > Upgrade to Plex plugin framework version 2
+# > Updated scraping code to work with the latest site's DOM
 # > Bug fixes
 #
 # v0.2 - January 22, 2011
@@ -23,8 +29,6 @@ import re
 
 VIDEO_PREFIX = "/video/1tvru"
 VERSION = 0.3
-PUBLIK_LINK = 'http://dl.dropbox.com/u/18973652/Plex/1tvRU.bundle.zip'
-UPDATECHECK_URL = 'http://dl.dropbox.com/u/18973652/Plex/1tvRU.bundle.zip/updatecheck.json?v=' + str(VERSION)
 NAME = L('Title')
 CACHE_INTERVAL = 18
 ART  = 'art-default.png'
@@ -400,16 +404,6 @@ def Photo(url):
 def Search(sender, query):
   query = re.sub(r' ', r'+', query)
   return SearchBrws('Result', link='/search/?q=' + urllib.quote_plus(query).encode("utf-8"))
-
-####################################################################################################
-
-def CheckForUpdate():
-  update = JSON.ObjectFromURL(UPDATECHECK_URL, cacheTime=CACHE_1DAY)
-  if update['version'] != None and update['url'] != None:
-    if float(update['version']) > VERSION:
-      return update['url']
-    else:
-      return None
 
 ####################################################################################################
 
