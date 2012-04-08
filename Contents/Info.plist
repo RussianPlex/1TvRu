@@ -3,11 +3,11 @@
 <plist version="1.0">
   <dict>
     <key>CFBundleDevelopmentRegion</key>
-    <string>English</string>
+    <string>Russian</string>
     <key>CFBundleExecutable</key>
-    <string>MyTvu</string>
+    <string>1TvRu</string>
     <key>CFBundleIdentifier</key>
-    <string>com.plexapp.plugins.mytv</string>
+    <string>com.plexapp.plugins.tv1ru</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>
@@ -18,7 +18,7 @@
     <string>1.0</string>
     <key>PlexAgentAttributionText</key>
     <string>
-      Плагин для бесплатного просмотра российского телевизионного канала Первый Канал
+      Плагин для бесплатного просмотра архивов российского телевизионного канала Первый Канал
       &lt;a href=&quot;http://www.1tv.ru/&quot;&gt;1tv.ru&lt;/a&gt;.
     </string>
     <key>PlexFrameworkVersion</key>

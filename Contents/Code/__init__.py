@@ -10,10 +10,11 @@
 # @author Zhenya Nyden <yev@curre.net>
 #
 ####################################################################################################
-# v0.3 - March 31, 2012
+# v0.3 - April 8, 2012
 # > Upgrade to Plex plugin framework version 2
 # > Updated scraping code to work with the latest site's DOM
 # > Bug fixes
+# > Added "next page" pagination
 #
 # v0.2 - January 22, 2011
 # > Changed default icon
@@ -34,9 +35,9 @@ CACHE_INTERVAL = 18
 ART  = 'art-default.png'
 ICON = 'icon-default.png'
 PREFS = 'icon-prefs.png'
-BASE_URL = 'http://www.1tv.ru'
+SITE_BASE_URL = 'http://www.1tv.ru/'
 
-TV_ARCHIVE = '%s/videoarchiver' % BASE_URL
+TV_ARCHIVE = SITE_BASE_URL + 'videoarchiver'
 V_LINK = ''
 TEST = 'http://www.1tv.ru/owa/win/ONE_ONLINE_VIDEOS.news_single_xml?pid=28425'
 PLAY_URL = 'http://www.1tv.ru/owa/win/ONE_ONLINE_VIDEOS.news_single_xml?pid='
@@ -47,6 +48,8 @@ FULL_URL = 'http://img2.1tv.ru/images/one/video_player.swf?file=http://www.1tv.r
 USER_AGENT = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ru; rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13 GTB7.1'
 ENCODING_1TV_PAGE = 'cp1251'
 ENCODING_PLEX = 'utf-8'
+
+SECTION_PAGE_URL_MATCHER = re.compile('^(.*pg=)(\d+)$', re.U)
 
 PREF_CACHE_TIME_NAME = 'tvru_pref_cache_time'
 PREF_CACHE_TIME_DEFAULT = CACHE_1MINUTE
@@ -118,15 +121,15 @@ def MainMenu():
   dir.viewGroup = 'List'
   page = getElementFromHttpRequest(TV_ARCHIVE)
   sectionsElems = page.xpath('//div[@class="tv_head"]')
-  Log("----> %s Categories" % len(sectionsElems))
+  Log("----> %s Sections" % len(sectionsElems))
   index = 0
   for sectionEl in sectionsElems:
     sectionTitle = sectionEl.xpath('./div[@class="tv_head-ins"]')[0].text.strip()
     quantity = sectionEl.xpath('./div[@class="tv_head-ins"]/span')[0].text.strip()
     sectionUrl = sectionEl.xpath('./div[@class="tv_head-right"]/a')[0].get('href')
     menuItemLabel = sectionTitle + ' ' + quantity
-    Log("----> Channel %s = '%s'" % (index, menuItemLabel))
-    dir.Append(Function(DirectoryItem(PageBrws, title=menuItemLabel, thumb=''), link=sectionUrl))
+    Log("----> Section %s = '%s'" % (index, menuItemLabel))
+    dir.Append(Function(DirectoryItem(SectionMenu, title=menuItemLabel, thumb=''), link=sectionUrl))
     index += 1
   if not len(sectionsElems):
     dir.header = L('CHANNEL')
@@ -136,14 +139,15 @@ def MainMenu():
   return dir
 
 
-def PageBrws(sender, link):
-  sectionAbsoluteUrl = BASE_URL + link
+def SectionMenu(sender, link):
+  sectionAbsoluteUrl = ensureAbsoluteUrl(link)
+  Log('################# sectionAbsoluteUrl=' + sectionAbsoluteUrl)
   dir = MediaContainer(title2=sender.itemTitle)
   dir.viewGroup = 'InfoList'
   page = getElementFromHttpRequest(sectionAbsoluteUrl)
   # Parse main content element (it contains image video thumbs, title, and links).
   elements = page.xpath('//div[@id="list_abc_search"]/ul/li')
-  Log("----> %s Categories" % len(elements))
+  Log("----> %s Video items" % len(elements))
   if len(elements) > 0:
     index = 0
     for element in elements:
@@ -157,12 +161,26 @@ def PageBrws(sender, link):
       else:
         # TODO(zhenya): replace with something different (a local asset).
         imgThumbUrl = 'http://f888.biz/images/default_site.png'
-      Log("----> Channel %s = '%s'" % (index, title))
+      Log("----> Video item %s = '%s'" % (index, title))
       #dir.Append(Function(DirectoryItem(EPGBrws, title=title, subtitle=date, thumb=''), link=link))
       dir.Append(
         Function(VideoItem(PlayLink, title=title, subtitle=date, summary='', thumb=Function(Thumb, url=imgThumbUrl)),
           link=link))
       index += 1
+    if len(elements) > 0:
+      urlMatch = SECTION_PAGE_URL_MATCHER.search(sectionAbsoluteUrl)
+      if urlMatch is None:
+        Log.ERROR('Unable to recognize section URL: "%s"' % sectionAbsoluteUrl)
+      else:
+        pageUrl = urlMatch.groups()[0]
+        pageInd = int(urlMatch.groups()[1])
+        paginationElems = page.xpath('//div[@class="all_pages"]/a/text()')
+        for pageLinkElem in paginationElems:
+          if pageLinkElem.lower().find(u'следующая') >= 0:
+            nextLinkUrl = pageUrl + str(pageInd + 1)
+            linkLabel = L('NEXTPAGE_LINK_LABEL') + ' (' + str(pageInd + 1) + ')'
+            dir.Append(Function(DirectoryItem(SectionMenu, title=linkLabel, thumb=''), link=nextLinkUrl))
+            break
   else:
     dir.header = L('CHANNEL')
     dir.message = L('NOTFOUND')
@@ -182,11 +200,11 @@ def SearchBrws(sender, link):
     Log("----> User is logged in '%s'" % (logged_in))
     dir = MediaContainer(title2=L('SEARCHRESULT'))
     dir.viewGroup = 'InfoList'
-    Log("----> URL='%s'" % (BASE_URL + link ))
-    #test=HTTP.Request(BASE_URL + link)
+    absUrl = ensureAbsoluteUrl(link)
+    Log("----> URL='%s'" % absUrl)
     xp = '//tbody/tr[td[@width="55"]]'
     elements = XML.ElementFromString(
-      HTTP.Request(BASE_URL + link).replace('<a href="#" class="open_stream"><span class="fade"></span></a>',
+      HTTP.Request(absUrl).replace('<a href="#" class="open_stream"><span class="fade"></span></a>',
         '').decode('utf-8').strip(), isHTML=True).xpath(xp)
     #Log("----> XML: '%s'" % (elements.text))
     Log("----> %s Items found" % len(elements))
@@ -236,11 +254,11 @@ def Search2Brws(sender, link):
     Log("----> User is logged in '%s'" % (logged_in))
     dir = MediaContainer(title2='Rearch Result')
     dir.viewGroup = 'InfoList'
-    Log("----> URL='%s'" % (BASE_URL + link ))
-    #test=HTTP.Request(BASE_URL + link)
+    absUrl = ensureAbsoluteUrl(link)
+    Log("----> URL='%s'" % absUrl)
     xp = '//tbody/tr[td[@width="110"]]'
     elements = XML.ElementFromString(
-      HTTP.Request(BASE_URL + link).replace('<a href="#" class="open_stream"><span class="fade"></span></a>',
+      HTTP.Request(absUrl).replace('<a href="#" class="open_stream"><span class="fade"></span></a>',
         '').decode('utf-8').strip(), isHTML=True).xpath(xp)
     #Log("----> XML: '%s'" % (elements.text))
     Log("----> %s Items found" % len(elements))
@@ -278,10 +296,10 @@ def Search2Brws(sender, link):
 def EPGBrws(sender, link):
   dir = MediaContainer(title3=sender.itemTitle)
   dir.viewGroup = 'InfoList'
-  Log("----> URL='%s'" % (BASE_URL + link ))
-  #test=HTTP.Request(BASE_URL + link)
+  absUrl = ensureAbsoluteUrl(link)
+  Log("----> URL='%s'" % absUrl)
   xp = "//tbody/tr"
-  elements = XML.ElementFromURL(BASE_URL + link, isHTML=True).xpath(xp)
+  elements = XML.ElementFromURL(absUrl, isHTML=True).xpath(xp)
   Log("----> elements '%s'" % (elements))
   #summary=getDescr(url='http://etvnet.com/tv/novosti-online/sobyitiya/378779/')
   summary = ''
@@ -353,7 +371,7 @@ def Login():
   elif not Prefs.Get('username') and not Prefs.Get('password'):
     return [False, L('LOGIN_TITLE'), L('LOGIN_NOT_SET')]
   else:
-    #initiate = HTTP.Request(BASE_URL+'/login/', encoding='iso-8859-1', cacheTime=1)
+    #initiate = HTTP.Request(SITE_BASE_URL+'login/', encoding='iso-8859-1', cacheTime=1)
     values = {
       'action': '/login/',
       'username': Prefs.Get('username'),
@@ -361,7 +379,7 @@ def Login():
       'password': Prefs.Get('password'),
       'remember_me': 'on'
     }
-    login = HTTP.Request(BASE_URL + '/login/', values=values, encoding='iso-8859-1', cacheTime=1)
+    login = HTTP.Request(SITE_BASE_URL + 'login/', values=values, encoding='iso-8859-1', cacheTime=1)
     # Check the response and see if the login attempt was successful
     #Log(" --> Response:%s" % login)
     check = re.compile('logout').findall(login)
@@ -422,3 +440,15 @@ def getElementFromHttpRequest(url):
     return HTML.ElementFromString(response)
   except:
     return None
+
+
+def ensureAbsoluteUrl(url):
+  """ Returns an absolute URL (starts with http://) by
+      pre-pending site's base URL to the passed URL string if necessary.
+  """
+  if url is None or len(url.strip()) < 10:
+    return None
+  url = url.strip()
+  if url[0:4] == 'http':
+    return url
+  return SITE_BASE_URL + url.lstrip('/')

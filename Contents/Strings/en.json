@@ -14,6 +14,7 @@
   'LOGIN_ERROR': 'Incorrect username and/or password.',
   'UNAVAILABLE_TITLE': 'Video not available',
   'UNAVAILABLE_MESSAGE': 'This video is not available for you. This can be caused\nby an expired or missing subscription or a geoblock.',
+  'NEXTPAGE_LINK_LABEL': 'Next Page',
   'SEARCH': 'Search',
   'SEARCHPROMT': 'Enter Name of the movie or TV show',
   'SEARCHRESULT': 'Search results',
