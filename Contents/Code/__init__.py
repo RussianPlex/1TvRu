@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 # Plex plugin for viewing internet archives of the Russian
-# TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/
+# TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/videoarchiver/
 #
 # Плагин для бесплатного просмотра интернет архива российского
-# телевизионного канала Первый Канал - http://www.1tv.ru/
+# телевизионного канала Первый Канал - http://www.1tv.ru/videoarchiver/
 #
 # @author Alex Titoff <rozdol@gmail.com> - http://rozdol.com/
 # @author Zhenya Nyden <yev@curre.net>
