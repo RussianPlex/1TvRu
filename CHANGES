@@ -1,0 +1,13 @@
+1TvRu-0.3 - April 8, 2012
+ - Upgrade to Plex plugin framework version 2
+ - Updated scraping code to work with the latest site's DOM
+ - Bug fixes
+ - Added "next page" pagination
+
+1TvRu-0.2 - January 22, 2011
+ - Changed default icon
+ - Added russian localization
+ - List of channels in MainMenu
+
+1TvRu-0.1 - January 20, 2011
+ - Initial release

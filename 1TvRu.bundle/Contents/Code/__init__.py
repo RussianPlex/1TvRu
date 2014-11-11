@@ -11,7 +11,7 @@ TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/videoarchiver/
 @revision @REPOSITORY.REVISION@
 @copyright (c) 2014 by Yevgeny Nyden
 @author Alex Titoff <rozdol@gmail.com> - http://rozdol.com/
-@author Zhenya Nyden <yev@curre.net>
+@author Yevgeny Nyden <yev@curre.net>
 @license GPLv3, see LICENSE for more details
 """
 
