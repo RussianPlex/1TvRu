@@ -1,30 +1,19 @@
 # -*- coding: utf-8 -*-
-#
-# Plex plugin for viewing internet archives of the Russian
-# TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/videoarchiver/
-#
-# Плагин для бесплатного просмотра интернет архива российского
-# телевизионного канала Первый Канал - http://www.1tv.ru/videoarchiver/
-#
-# @author Alex Titoff <rozdol@gmail.com> - http://rozdol.com/
-# @author Zhenya Nyden <yev@curre.net>
-#
-####################################################################################################
-# v0.3 - April 8, 2012
-# > Upgrade to Plex plugin framework version 2
-# > Updated scraping code to work with the latest site's DOM
-# > Bug fixes
-# > Added "next page" pagination
-#
-# v0.2 - January 22, 2011
-# > Changed default icon
-# > Added russian localization
-# > List of channels in MainMenu
-#
-# v0.1 - January 20, 2011
-# > Initial release
-#
-###################################################################################################
+
+"""
+Plex plugin for viewing internet archives of the Russian
+TV station "Pervy Canal" ("Channel One") - http://www.1tv.ru/videoarchiver/
+
+Плагин для бесплатного просмотра интернет архива российского
+телевизионного канала Первый Канал - http://www.1tv.ru/videoarchiver/
+
+@version @PLUGIN.REVISION@
+@revision @REPOSITORY.REVISION@
+@copyright (c) 2014 by Yevgeny Nyden
+@author Alex Titoff <rozdol@gmail.com> - http://rozdol.com/
+@author Zhenya Nyden <yev@curre.net>
+@license GPLv3, see LICENSE for more details
+"""
 
 import re
 
